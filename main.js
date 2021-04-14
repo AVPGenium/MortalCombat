@@ -1,9 +1,28 @@
+function changeHp(value) {
+    this.hp -= value;
+    if (this.hp <= 0) {
+        this.hp = 0;
+    }
+}
+
+function elHp() {
+    return document.querySelector('.player' + this.player + ' .life');
+}
+
+function renderHp() {
+    const $playerLife = this.elHp();
+    $playerLife.style.width = this.hp + '%';
+}
+
 let player1 = {
     player: 1,
     name: "player1",
     img: "http://reactmarathon-api.herokuapp.com/assets/scorpion.gif",
     hp: 100,
     weapon: ["weapon1, weapon2"],
+    changeHp: changeHp,
+    elHp: elHp,
+    renderHp: renderHp,
     attack: function () {
         console.log(this.name + ' Fight...')
     }
@@ -15,6 +34,9 @@ let player2 = {
     img: "http://reactmarathon-api.herokuapp.com/assets/kitana.gif",
     hp: 100,
     weapon: ["weapon1, weapon2"],
+    changeHp: changeHp,
+    elHp: elHp,
+    renderHp: renderHp,
     attack: function () {
         console.log(this.name + ' Fight...')
     }
@@ -33,22 +55,17 @@ function createElement(tag, className) {
     return $tag;
 }
 
-function changeHp(player) {
-    const $playerLife = document.querySelector('.player' + player.player + ' .life');
-    const damageValue = Math.floor(Math.random() * DAMAGE_MAX_VALUE + DAMAGE_MIN_VALUE);
-    const currentHp = player.hp - damageValue;
-    if (currentHp < 0) {
-        $randomButton.disabled = true;
-        const winnerName = player.name === player1.name ? player2.name : player1.name;
-        $arenas.appendChild(playerWin(winnerName));
-    }
-    player.hp = currentHp < 0 ? 0 : currentHp;
-    $playerLife.style.width = player.hp + '%';
+function getRandom() {
+    return Math.floor(Math.random() * DAMAGE_MAX_VALUE + DAMAGE_MIN_VALUE);
 }
 
-function playerWin(name) {
+function playerWins(name) {
     const $winnerTitle = createElement('div', 'loseTitle');
-    $winnerTitle.innerText = name + ' won!'
+    if (name) {
+        $winnerTitle.innerText = name + ' wins!'
+    } else {
+        $winnerTitle.innerText = 'draw'
+    }
     return $winnerTitle;
 }
 
@@ -83,6 +100,20 @@ $arenas.appendChild(createPlayer(player1));
 $arenas.appendChild(createPlayer(player2));
 
 $randomButton.addEventListener('click', () => {
-    changeHp(player1);
-    changeHp(player2);
+    player1.changeHp(getRandom());
+    player1.renderHp();
+    player2.changeHp(getRandom());
+    player2.renderHp();
+
+    if (player1.hp === 0 || player2.hp === 0) {
+        $randomButton.disabled = true;
+    }
+
+    if (player1.hp === 0 && player1.hp < player2.hp) {
+        $arenas.appendChild(playerWins(player2.name));
+    } else if (player2.hp === 0 && player2.hp < player1.hp) {
+        $arenas.appendChild(playerWins(player1.name));
+    } else if (player1.hp === 0 && player2.hp === 0) {
+        $arenas.appendChild(playerWins());
+    }
 })
